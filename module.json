@@ -1,0 +1,25 @@
+{
+  "id": "header-collapse",
+  "title": "Header Controls Collapse",
+  "description": "Сворачивает кнопки в шапке листов (актёров и предметов) в выпадающее меню ≡. Крестик закрытия всегда остаётся на виду.",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": "12",
+    "verified": "13"
+  },
+  "esmodules": [
+    "scripts/header-collapse.mjs"
+  ],
+  "styles": [
+    "styles/header-collapse.css"
+  ],
+  "authors": [
+    {
+      "name": "def-gu",
+      "url": "https://github.com/def-gu"
+    }
+  ],
+  "url": "https://github.com/def-gu/header-collapse",
+  "bugs": "https://github.com/def-gu/header-collapse/issues",
+  "license": "LICENSE"
+}
