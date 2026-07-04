@@ -1,22 +1,22 @@
 /**
  * Header Controls Collapse
  *
- * Лист актёра/предмета в pf2e построен на ApplicationV1. Его шапка (.window-header)
- * содержит горизонтальный ряд кнопок <a class="header-button …">: по одной на каждый
- * модуль, плюс штатный крестик <a class="header-button … close">. Когда модулей много,
- * ряд переполняет заголовок и выдавливает крестик за край окна.
+ * pf2e actor/item sheets are built on ApplicationV1. Their header (.window-header)
+ * holds a horizontal row of <a class="header-button …"> buttons: one per module,
+ * plus the stock close cross <a class="header-button … close">. With many modules
+ * the row overflows the title bar and pushes the close button past the window edge.
  *
- * Этот модуль на каждом рендере листа перекладывает все кнопки шапки, КРОМЕ крестика,
- * в выпадающее меню под кнопкой-гамбургером (≡). Перенос DOM-узла сохраняет навешанные
- * на него обработчики кликов, поэтому кнопки продолжают работать как раньше.
+ * On every sheet render this module moves all header buttons EXCEPT the close one
+ * into a drop-down menu behind a hamburger (≡) toggle. Moving a DOM node keeps the
+ * click handlers attached to it, so the buttons keep working as before.
  */
 
 const MODULE_ID = "header-collapse";
 const TOGGLE_CLASS = `${MODULE_ID}-toggle`;
 const MENU_CLASS = `${MODULE_ID}-menu`;
 
-// Один MutationObserver на открытый лист — чтобы ловить кнопки, которые модули
-// дорисовывают асинхронно, уже после первого рендера. Ключ — app.appId.
+// One MutationObserver per open sheet, to catch buttons that modules draw in
+// asynchronously after the first render. Keyed by app.appId.
 const observers = new Map();
 
 Hooks.once("init", () => {
@@ -30,13 +30,13 @@ Hooks.once("init", () => {
 	});
 });
 
-// renderActorSheet / renderItemSheet срабатывают для ВСЕХ листов соответствующего
-// типа, потому что v1 вызывает render-хук по всей цепочке наследования классов.
+// renderActorSheet / renderItemSheet fire for ALL sheets of the matching kind,
+// because v1 calls the render hook for the whole class inheritance chain.
 for (const hook of ["renderActorSheet", "renderItemSheet"]) {
 	Hooks.on(hook, onRenderSheet);
 }
 
-// Чистим observer, когда лист закрывается.
+// Drop the observer when the sheet closes.
 Hooks.on("closeApplication", (app) => {
 	const obs = observers.get(app.appId);
 	if (obs) {
@@ -47,13 +47,13 @@ Hooks.on("closeApplication", (app) => {
 
 /**
  * @param {Application} app
- * @param {JQuery|HTMLElement} html  В appv1 хук передаёт jQuery; берём из него DOM-узел.
+ * @param {JQuery|HTMLElement} html  In appv1 the hook passes jQuery; unwrap the DOM node.
  */
 function onRenderSheet(app, html) {
 	const root = html?.[0] ?? html;
 	if (!(root instanceof HTMLElement)) return;
-	// requestAnimationFrame даёт другим render-хукам в этом же цикле дорисовать свои
-	// кнопки, прежде чем мы их соберём.
+	// requestAnimationFrame lets other render hooks in the same cycle draw their
+	// buttons before we collect them.
 	requestAnimationFrame(() => {
 		collapseHeader(app, root);
 		attachObserver(app, root);
@@ -61,9 +61,9 @@ function onRenderSheet(app, html) {
 }
 
 /**
- * Перекладывает все кнопки шапки, кроме крестика, в выпадающее меню.
- * Идемпотентна: при повторном вызове переиспользует уже созданные меню и гамбургер,
- * подбирая только новые кнопки.
+ * Moves every header button except the close one into the drop-down menu.
+ * Idempotent: repeated calls reuse the already created menu and toggle and
+ * only pick up new buttons.
  */
 function collapseHeader(app, root) {
 	const header = root.querySelector(":scope > .window-header");
@@ -73,11 +73,11 @@ function collapseHeader(app, root) {
 	const movable = [...header.querySelectorAll(".header-button")].filter((b) => b !== close);
 
 	let menu = root.querySelector(`:scope > .${MENU_CLASS}`);
-	if (movable.length === 0) return; // нечего сворачивать
+	if (movable.length === 0) return; // nothing to collapse
 	if (movable.length < game.settings.get(MODULE_ID, "minButtons") && !menu) return;
 
-	// Меню создаём один раз и делаем потомком окна (.window-app): тогда штатная
-	// привязка кликов v1 (html.find(".header-button")) по-прежнему видит наши кнопки.
+	// The menu is created once, as a child of the window (.window-app): the stock v1
+	// click binding (html.find(".header-button")) then still sees our buttons.
 	if (!menu) {
 		menu = document.createElement("nav");
 		menu.className = MENU_CLASS;
@@ -85,8 +85,8 @@ function collapseHeader(app, root) {
 		root.appendChild(menu);
 	}
 
-	// Гамбургер создаём один раз и ставим прямо перед крестиком. НЕ даём ему класс
-	// header-button, чтобы на него не навесилась штатная обработка кликов v1.
+	// The toggle is created once, right before the close button. It must NOT get the
+	// header-button class, or the stock v1 click handling would bind to it.
 	let toggle = header.querySelector(`.${TOGGLE_CLASS}`);
 	if (!toggle) {
 		toggle = document.createElement("a");
@@ -104,33 +104,34 @@ function collapseHeader(app, root) {
 		else header.appendChild(toggle);
 	}
 
-	// Переносим кнопки в меню. appendChild перемещает узел вместе с его обработчиками.
+	// Move the buttons into the menu. appendChild relocates a node with its handlers.
 	for (const b of movable) menu.appendChild(b);
 }
 
 function openMenu(toggle, menu) {
 	menu.hidden = false;
 
-	// Меню — потомок окна (.window-app). Позиционируем его АБСОЛЮТНО относительно окна,
-	// а не вьюпорта: окно при перетаскивании двигается через transform, и transform у
-	// предка превращает position:fixed в позиционирование относительно этого предка —
-	// отсюда и был «уезд вправо»/«не появляется». При position:absolute меню привязано
-	// к самому окну. Координаты берём как РАЗНОСТЬ двух getBoundingClientRect (кнопка и
-	// окно): взаимное смещение от transform в разности сокращается, позиция точна при любом drag.
+	// The menu is a child of the window (.window-app). Position it ABSOLUTELY relative
+	// to the window, not the viewport: dragging moves the window via transform, and a
+	// transform on an ancestor turns position:fixed into positioning relative to that
+	// ancestor — hence the old "drifts right"/"never shows up" bugs. With
+	// position:absolute the menu is anchored to the window itself. Coordinates are the
+	// DIFFERENCE of two getBoundingClientRect calls (toggle and window): the transform
+	// offset cancels out in the difference, so the position is exact during any drag.
 	const root = menu.closest(".window-app, .application") ?? menu.parentElement;
 	const tr = toggle.getBoundingClientRect();
 	const rr = root.getBoundingClientRect();
 	menu.style.position = "absolute";
-	menu.style.top = `${tr.bottom - rr.top + 2}px`; // сразу под кнопкой
-	menu.style.right = `${Math.max(0, rr.right - tr.right)}px`; // правым краем под кнопку
+	menu.style.top = `${tr.bottom - rr.top + 2}px`; // right below the toggle
+	menu.style.right = `${Math.max(0, rr.right - tr.right)}px`; // right edge under the toggle
 	menu.style.left = "auto";
-	menu.style.maxHeight = `${Math.max(120, rr.bottom - tr.bottom - 12)}px`; // не вылезать за низ окна
+	menu.style.maxHeight = `${Math.max(120, rr.bottom - tr.bottom - 12)}px`; // stay above the window bottom
 
-	// Закрытие по клику вне меню.
+	// Close when clicking outside the menu.
 	menu._onDoc = (ev) => {
 		if (!menu.contains(ev.target) && !toggle.contains(ev.target)) closeMenu(menu);
 	};
-	// Выбор пункта тоже закрывает меню.
+	// Picking an item also closes the menu.
 	menu._onPick = (ev) => {
 		if (ev.target.closest(".header-button")) closeMenu(menu);
 	};
@@ -145,8 +146,8 @@ function closeMenu(menu) {
 }
 
 /**
- * Следит за шапкой: если модуль добавит кнопку позже (асинхронно), мы её тоже подберём.
- * На время собственного переноса observer отключаем, чтобы не зациклиться.
+ * Watches the header: if a module adds a button later (asynchronously), we pick it
+ * up too. The observer is disconnected during our own move to avoid a feedback loop.
  */
 function attachObserver(app, root) {
 	if (observers.has(app.appId)) return;
