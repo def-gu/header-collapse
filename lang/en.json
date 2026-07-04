@@ -1,0 +1,7 @@
+{
+  "HEADERCOLLAPSE": {
+    "Menu": "Menu",
+    "MinButtonsName": "Minimum buttons to collapse",
+    "MinButtonsHint": "Hide header buttons in the ≡ menu only when there are at least this many of them (not counting the close button)."
+  }
+}
