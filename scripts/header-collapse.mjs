@@ -21,8 +21,8 @@ const observers = new Map();
 
 Hooks.once("init", () => {
 	game.settings.register(MODULE_ID, "minButtons", {
-		name: "Минимум кнопок для сворачивания",
-		hint: "Прятать кнопки шапки в меню ≡, только если их (не считая крестика) не меньше этого числа.",
+		name: "HEADERCOLLAPSE.MinButtonsName",
+		hint: "HEADERCOLLAPSE.MinButtonsHint",
 		scope: "client",
 		config: true,
 		type: Number,
@@ -91,8 +91,8 @@ function collapseHeader(app, root) {
 	if (!toggle) {
 		toggle = document.createElement("a");
 		toggle.className = `control ${TOGGLE_CLASS}`;
-		toggle.dataset.tooltip = "Меню";
-		toggle.setAttribute("aria-label", "Меню");
+		toggle.dataset.tooltip = "HEADERCOLLAPSE.Menu";
+		toggle.setAttribute("aria-label", game.i18n.localize("HEADERCOLLAPSE.Menu"));
 		toggle.innerHTML = `<i class="fa-solid fa-bars"></i>`;
 		toggle.addEventListener("click", (ev) => {
 			ev.preventDefault();
