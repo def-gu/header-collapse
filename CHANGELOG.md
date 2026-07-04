@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-07-04
+
 ### Added
 
 - Interface translations in English and Russian.
@@ -20,5 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Buttons added by other modules after the sheet opens are collapsed too.
 - A client setting for the minimum number of buttons to collapse.
 
-[Unreleased]: https://github.com/def-gu/header-collapse/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/def-gu/header-collapse/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/def-gu/header-collapse/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/def-gu/header-collapse/releases/tag/v1.0.0
