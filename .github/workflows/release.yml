@@ -24,7 +24,7 @@ jobs:
             fs.writeFileSync('module.json', JSON.stringify(m, null, 2) + '\n');
           "
       - name: Build module.zip
-        run: zip -r module.zip module.json scripts styles LICENSE README.md
+        run: zip -r module.zip module.json scripts styles lang LICENSE README.md README.ru.md CHANGELOG.md
       - name: Create GitHub release
         env:
           VERSION: ${{ github.ref_name }}
