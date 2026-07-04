@@ -1,7 +1,7 @@
 {
   "id": "header-collapse",
   "title": "Header Controls Collapse",
-  "description": "Сворачивает кнопки в шапке листов (актёров и предметов) в выпадающее меню ≡. Крестик закрытия всегда остаётся на виду.",
+  "description": "Collapses sheet header buttons (actors and items) into a ≡ drop-down menu. The close button always stays visible.",
   "version": "1.0.0",
   "compatibility": {
     "minimum": "12",
